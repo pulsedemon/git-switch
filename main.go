@@ -25,9 +25,9 @@ func main() {
 	cmd := args["<command>"].(string)
 	cmdArgs := args["<args>"].([]string)
 
-	command_err := runCommand(cmd, cmdArgs)
-	if command_err != nil {
-		fmt.Println(command_err)
+	err := runCommand(cmd, cmdArgs)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
