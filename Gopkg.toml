@@ -21,7 +21,7 @@
 ## Recommended: the version constraint to enforce for the project.
 ## Only one of "branch", "version" or "revision" can be specified.
 # version = "1.0.0"
-# branch = "master"
+branch = "master"
 # revision = "abc123"
 #
 ## Optional: an alternate location (URL or import path) for the project's source.
@@ -48,5 +48,3 @@
 ## enforce that the alternate location is used for that project, regardless of
 ## what source location any dependent projects specify.
 # source = "https://github.com/myfork/package.git"
-
-
