@@ -1,27 +1,50 @@
 package main
 
 import (
-  "log"
-  "github.com/docopt/docopt-go"
+	"fmt"
+	"os"
+
+	"github.com/docopt/docopt-go"
 )
-
-var Version = "0.0.1"
-
-const Usage = `
-  Usage:
-  Options:
-    -v, --version    output version
-`
 
 func main() {
 
-  args, err := docopt.Parse(Usage, nil, true, Version, false)
+	usage := `usage: git  [--version]
+    <command> [<args>...]
 
-  if err != nil {
-		log.Fatalf("error: %s", err)
+    commands:
+      ls      list available users
+      help    display help
+
+    options:
+       -v --version
+       -h, --help
+`
+
+	args, _ := docopt.Parse(usage, nil, true, "0.0.1", false)
+	cmd := args["<command>"].(string)
+	cmdArgs := args["<args>"].([]string)
+
+	command_err := runCommand(cmd, cmdArgs)
+	if command_err != nil {
+		fmt.Println(command_err)
+		os.Exit(1)
 	}
 
-  log.Fatalf("error: %s", args)
+}
 
+func runCommand(cmd string, args []string) (err error) {
+	argv := make([]string, 1)
+	argv[0] = cmd
 
+	switch cmd {
+	case "ls":
+		fmt.Println("ran ls")
+		return
+	case "help", "":
+		fmt.Println("asked for help")
+		return
+	}
+
+	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)
 }
