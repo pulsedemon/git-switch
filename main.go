@@ -159,6 +159,12 @@ func runCommand(cmd string, args []string) (err error) {
 
 	switch cmd {
 	case "ls":
+		println()
+		defaultUserName, defaultUserEmail := getDefaultUser()
+		fmt.Printf("  \033[1m%s\033[m\n", "Default user:")
+		fmt.Printf("  %s\n", defaultUserName)
+		fmt.Printf("  %s\n", defaultUserEmail)
+
 		currentUserName, currentUserEmail := getCurrentGitUser()
 		println()
 		fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
