@@ -1,4 +1,10 @@
-memo = "da3a92b7ea4cf96557796d7dc48fc24131b7d4b067d6b1b115498047701c642c"
+memo = "104c3263bfa77cdf64957b02b03c4952338f2312f930da9d48053b479818df80"
+
+[[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/docopt/docopt-go"

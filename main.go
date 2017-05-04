@@ -7,7 +7,12 @@ import (
 	"os/user"
 
 	"github.com/docopt/docopt-go"
+	"github.com/BurntSushi/toml"
 )
+
+var user_info, _ = user.Current()
+var user_directory = user_info.HomeDir
+var config_file = fmt.Sprintf("%s/.git_switch_config", user_directory)
 
 func main() {
 
@@ -36,6 +41,7 @@ func main() {
 }
 
 func goRun(scriptName string, args []string) (err error) {
+
 	cmdArgs := make([]string, 2)
 	cmdArgs[0] = "run"
 	cmdArgs[1] = scriptName
@@ -48,9 +54,11 @@ func goRun(scriptName string, args []string) (err error) {
 		return
 	}
 	return
+
 }
 
 func runCommand(cmd string, args []string) (err error) {
+
 	argv := make([]string, 1)
 	argv[0] = cmd
 
@@ -59,12 +67,12 @@ func runCommand(cmd string, args []string) (err error) {
 		fmt.Println("ran ls")
 		return
 	case "setup":
-		usr, _ := user.Current()
-		fmt.Println((usr.HomeDir))
+		fmt.Println((config_file))
 		return
 	case "help", "":
 		return goRun("main.go", []string{"--help"})
 	}
 
 	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)
+
 }
