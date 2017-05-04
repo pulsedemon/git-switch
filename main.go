@@ -54,6 +54,7 @@ func main() {
 
 }
 
+
 func goRun(scriptName string, args []string) (err error) {
 
 	cmdArgs := make([]string, 2)
@@ -72,6 +73,17 @@ func goRun(scriptName string, args []string) (err error) {
 }
 
 
+func decodeConfig() (tomlConfig) {
+	var config tomlConfig
+	if _, err := toml.DecodeFile(config_file, &config); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	return config
+}
+
+
 func getCurrentGitUser() (string, string) {
 	user_name, _ := exec.Command("git", "config", "--global", "user.name").Output();
 	user_email, _ := exec.Command("git", "config", "--global", "user.email").Output();
@@ -80,12 +92,18 @@ func getCurrentGitUser() (string, string) {
 }
 
 
+func switchGitUser(user_name string, user_email string) {
+	exec.Command("git", "config", "--global", "user.name", user_name).Run()
+	exec.Command("git", "config", "--global", "user.email", user_email).Run()
+
+	fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
+	fmt.Printf("  %s\n", user_name)
+	fmt.Printf("  %s\n", user_email)
+}
+
+
 func printAvailableUsers() {
-	var config tomlConfig
-	if _, err := toml.DecodeFile(config_file, &config); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	var config = decodeConfig()
 
 	println()
 	fmt.Printf("  \033[1m%s\033[m\n", "Available users:")
@@ -103,11 +121,8 @@ func searchForUser(query string) {
 	matches := make([]int, 0)
 	fmt.Printf("  \033[1m%s\033[m %s\n", "Searching for user:", query)
 
-	var config tomlConfig
-	if _, err := toml.DecodeFile(config_file, &config); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	var config = decodeConfig()
+
 
 	println()
 
@@ -125,7 +140,8 @@ func searchForUser(query string) {
 		fmt.Printf("  %s\n", "Try your search again with a more specific query.")
 		printAvailableUsers()
 	} else if len(matches) == 1 {
-		fmt.Printf("  \033[1m%s\033[m\n", "Match found.")
+		fmt.Printf("  \033[1m%s\033[m\n", "Match found.  Switching...\n")
+		switchGitUser(config.Authors[matches[0]].Name, config.Authors[matches[0]].Email)
 	}	else {
 		fmt.Printf("  \033[1;31m%s\033[m %s\n", "No matches for:", query)
 	}
