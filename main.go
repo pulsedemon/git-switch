@@ -14,6 +14,7 @@ var user_info, _ = user.Current()
 var user_directory = user_info.HomeDir
 var config_file = fmt.Sprintf("%s/.git_switch_config", user_directory)
 
+
 type tomlConfig struct {
 	Title   string
 	Default userInfo
@@ -27,11 +28,12 @@ type userInfo struct {
 
 func main() {
 
-	usage := `usage: git  [--version]
+	usage := `Usage: git-switch [--version]
     <command> [<args>...]
 
     commands:
       ls      list available users
+      setup   generate config file if it doesn't exist
       help    display help
 
     options:
@@ -68,6 +70,32 @@ func goRun(scriptName string, args []string) (err error) {
 
 }
 
+
+func getCurrentGitUser() (string, string) {
+	user_name, _ := exec.Command("git", "config", "--global", "user.name").Output();
+	user_email, _ := exec.Command("git", "config", "--global", "user.email").Output();
+
+	return fmt.Sprintf("%s", user_name), fmt.Sprintf("%s", user_email)
+}
+
+
+func printAvailableUsers() {
+	var config tomlConfig
+	if _, err := toml.DecodeFile(config_file, &config); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	println()
+	fmt.Printf("  \033[1m%s\033[m\n", "Available users:")
+	for _, author := range config.Authors {
+		fmt.Printf("  %s\n", author.Name)
+		fmt.Printf("  %s\n", author.Email)
+		println()
+	}
+}
+
+
 func runCommand(cmd string, args []string) (err error) {
 
 	argv := make([]string, 1)
@@ -75,27 +103,20 @@ func runCommand(cmd string, args []string) (err error) {
 
 	switch cmd {
 	case "ls":
-		fmt.Println("ran ls")
+		current_user_name, current_user_email := getCurrentGitUser()
+		println()
+		fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
+		fmt.Printf("  %s", current_user_name)
+		fmt.Printf("  %s", current_user_email)
+
+		printAvailableUsers()
 		return
+
 	case "setup":
+		// TODO: finish this
 		fmt.Println((config_file))
 		return
-	case "config":
-		var config tomlConfig
-		if _, err := toml.DecodeFile(config_file, &config); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
 
-		fmt.Printf("Title: %s\n", config.Title)
-		fmt.Printf("Default:\n\tname: %s\n\temail: %s\n", config.Default.Name, config.Default.Email)
-
-		fmt.Printf("\nAuthors\n")
-		for _, author := range config.Authors {
-			fmt.Printf("\tname: %s\n\temail:%s\n\n", author.Name, author.Email)
-		}
-
-		return
 	case "help", "":
 		return goRun("main.go", []string{"--help"})
 	}
