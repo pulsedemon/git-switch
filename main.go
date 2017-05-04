@@ -7,14 +7,13 @@ import (
 	"os/user"
 	"strings"
 
-	"github.com/docopt/docopt-go"
 	"github.com/BurntSushi/toml"
+	"github.com/docopt/docopt-go"
 )
 
-var user_info, _ = user.Current()
-var user_directory = user_info.HomeDir
-var config_file = fmt.Sprintf("%s/.git_switch_config", user_directory)
-
+var osUserInfo, _ = user.Current()
+var userDirectory = osUserInfo.HomeDir
+var configFile = fmt.Sprintf("%s/.git_switch_config", userDirectory)
 
 type tomlConfig struct {
 	Title   string
@@ -54,9 +53,7 @@ func main() {
 
 }
 
-
 func goRun(scriptName string, args []string) (err error) {
-
 	cmdArgs := make([]string, 2)
 	cmdArgs[0] = "run"
 	cmdArgs[1] = scriptName
@@ -69,13 +66,11 @@ func goRun(scriptName string, args []string) (err error) {
 		return
 	}
 	return
-
 }
 
-
-func decodeConfig() (tomlConfig) {
+func decodeConfig() tomlConfig {
 	var config tomlConfig
-	if _, err := toml.DecodeFile(config_file, &config); err != nil {
+	if _, err := toml.DecodeFile(configFile, &config); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -83,24 +78,21 @@ func decodeConfig() (tomlConfig) {
 	return config
 }
 
-
 func getCurrentGitUser() (string, string) {
-	user_name, _ := exec.Command("git", "config", "--global", "user.name").Output();
-	user_email, _ := exec.Command("git", "config", "--global", "user.email").Output();
+	userName, _ := exec.Command("git", "config", "--global", "user.name").Output()
+	userEmail, _ := exec.Command("git", "config", "--global", "user.email").Output()
 
-	return fmt.Sprintf("%s", user_name), fmt.Sprintf("%s", user_email)
+	return fmt.Sprintf("%s", userName), fmt.Sprintf("%s", userEmail)
 }
 
-
-func switchGitUser(user_name string, user_email string) {
-	exec.Command("git", "config", "--global", "user.name", user_name).Run()
-	exec.Command("git", "config", "--global", "user.email", user_email).Run()
+func switchGitUser(userName string, userEmail string) {
+	exec.Command("git", "config", "--global", "user.name", userName).Run()
+	exec.Command("git", "config", "--global", "user.email", userEmail).Run()
 
 	fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
-	fmt.Printf("  %s\n", user_name)
-	fmt.Printf("  %s\n", user_email)
+	fmt.Printf("  %s\n", userName)
+	fmt.Printf("  %s\n", userEmail)
 }
-
 
 func printAvailableUsers() {
 	var config = decodeConfig()
@@ -112,17 +104,16 @@ func printAvailableUsers() {
 		fmt.Printf("  %s\n", author.Email)
 		println()
 	}
+
+	return
 }
 
-
 func searchForUser(query string) {
-
 	println()
 	matches := make([]int, 0)
 	fmt.Printf("  \033[1m%s\033[m %s\n", "Searching for user:", query)
 
 	var config = decodeConfig()
-
 
 	println()
 
@@ -142,32 +133,30 @@ func searchForUser(query string) {
 	} else if len(matches) == 1 {
 		fmt.Printf("  \033[1m%s\033[m\n", "Match found.  Switching...\n")
 		switchGitUser(config.Authors[matches[0]].Name, config.Authors[matches[0]].Email)
-	}	else {
+	} else {
 		fmt.Printf("  \033[1;31m%s\033[m %s\n", "No matches for:", query)
 	}
-
+	return
 }
 
-
 func runCommand(cmd string, args []string) (err error) {
-
 	argv := make([]string, 1)
 	argv[0] = cmd
 
 	switch cmd {
 	case "ls":
-		current_user_name, current_user_email := getCurrentGitUser()
+		currentUserName, currentUserEmail := getCurrentGitUser()
 		println()
 		fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
-		fmt.Printf("  %s", current_user_name)
-		fmt.Printf("  %s", current_user_email)
+		fmt.Printf("  %s", currentUserName)
+		fmt.Printf("  %s", currentUserEmail)
 
 		printAvailableUsers()
 		return
 
 	case "setup":
 		// TODO: finish this
-		fmt.Println((config_file))
+		fmt.Println((configFile))
 		return
 
 	case "help", "":
@@ -180,5 +169,4 @@ func runCommand(cmd string, args []string) (err error) {
 	}
 
 	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)
-
 }
