@@ -14,6 +14,17 @@ var user_info, _ = user.Current()
 var user_directory = user_info.HomeDir
 var config_file = fmt.Sprintf("%s/.git_switch_config", user_directory)
 
+type tomlConfig struct {
+	Title   string
+	Default userInfo
+	Authors []userInfo
+}
+
+type userInfo struct {
+	Name  string
+	Email string
+}
+
 func main() {
 
 	usage := `usage: git  [--version]
@@ -68,6 +79,22 @@ func runCommand(cmd string, args []string) (err error) {
 		return
 	case "setup":
 		fmt.Println((config_file))
+		return
+	case "config":
+		var config tomlConfig
+		if _, err := toml.DecodeFile(config_file, &config); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Title: %s\n", config.Title)
+		fmt.Printf("Default:\n\tname: %s\n\temail: %s\n", config.Default.Name, config.Default.Email)
+
+		fmt.Printf("\nAuthors\n")
+		for _, author := range config.Authors {
+			fmt.Printf("\tname: %s\n\temail:%s\n\n", author.Name, author.Email)
+		}
+
 		return
 	case "help", "":
 		return goRun("main.go", []string{"--help"})
