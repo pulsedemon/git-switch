@@ -34,6 +34,7 @@ func main() {
     commands:
       ls      list available users
       setup   generate config file if it doesn't exist
+      reset   switch back to the default user
       help    display help
 
     options:
@@ -92,6 +93,19 @@ func switchGitUser(userName string, userEmail string) {
 	fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
 	fmt.Printf("  %s\n", userName)
 	fmt.Printf("  %s\n", userEmail)
+}
+
+func resetGitUser() {
+	println()
+	fmt.Printf("  \033[1m%s\033[m\n\n", "Resetting user back to default...")
+	userName, userEmail := getDefaultUser()
+	switchGitUser(userName, userEmail)
+}
+
+func getDefaultUser() (string, string) {
+	var config = decodeConfig()
+
+	return config.Default.Name, config.Default.Email
 }
 
 func printAvailableUsers() {
@@ -157,6 +171,10 @@ func runCommand(cmd string, args []string) (err error) {
 	case "setup":
 		// TODO: finish this
 		fmt.Println((configFile))
+		return
+
+	case "reset":
+		resetGitUser()
 		return
 
 	case "help", "":
