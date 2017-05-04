@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"strings"
 
 	"github.com/docopt/docopt-go"
 	"github.com/BurntSushi/toml"
@@ -96,6 +97,42 @@ func printAvailableUsers() {
 }
 
 
+func searchForUser(query string) {
+
+	println()
+	matches := make([]int, 0)
+	fmt.Printf("  \033[1m%s\033[m %s\n", "Searching for user:", query)
+
+	var config tomlConfig
+	if _, err := toml.DecodeFile(config_file, &config); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	println()
+
+	for index, author := range config.Authors {
+
+		if strings.Contains(strings.ToUpper(author.Name), strings.ToUpper(query)) {
+			matches = append(matches, index)
+		} else if strings.Contains(strings.ToUpper(author.Email), strings.ToUpper(query)) {
+			matches = append(matches, index)
+		}
+	}
+
+	if len(matches) > 1 {
+		fmt.Printf("  \033[1;33m%s\033[m %s\n", "More than one match found for query:", query)
+		fmt.Printf("  %s\n", "Try your search again with a more specific query.")
+		printAvailableUsers()
+	} else if len(matches) == 1 {
+		fmt.Printf("  \033[1m%s\033[m\n", "Match found.")
+	}	else {
+		fmt.Printf("  \033[1;31m%s\033[m %s\n", "No matches for:", query)
+	}
+
+}
+
+
 func runCommand(cmd string, args []string) (err error) {
 
 	argv := make([]string, 1)
@@ -119,6 +156,11 @@ func runCommand(cmd string, args []string) (err error) {
 
 	case "help", "":
 		return goRun("main.go", []string{"--help"})
+	}
+
+	if cmd != "" && len(args) == 0 {
+		searchForUser(cmd)
+		return
 	}
 
 	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)
