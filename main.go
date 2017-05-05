@@ -164,7 +164,15 @@ func switchUser(matches []int, query string) {
 	if len(matches) > 1 {
 		fmt.Printf("  \033[1;33m%s\033[m %s\n", "More than one match found for query:", query)
 		fmt.Printf("  %s\n", "Try your search again with a more specific query.")
-		printAvailableUsers()
+
+		println()
+		fmt.Printf("  \033[1m%s\033[m\n", "Users matching query:")
+		for _, matchIndex := range matches {
+			fmt.Printf("  %s\n", config.Authors[matchIndex].Name)
+			fmt.Printf("  %s\n", config.Authors[matchIndex].Email)
+			println()
+		}
+
 	} else if len(matches) == 1 {
 		fmt.Printf("  \033[1m%s\033[m\n", "Match found.  Switching...\n")
 		switchGitUser(config.Authors[matches[0]].Name, config.Authors[matches[0]].Email)
