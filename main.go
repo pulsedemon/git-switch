@@ -183,6 +183,42 @@ func switchUser(matches []int, query string) {
 	return
 }
 
+func addUserToConfig(userName string, userEmail string) {
+
+	matches, query := searchForUser(userEmail)
+
+	if len(matches) > 0 {
+		println()
+		fmt.Printf("  \033[1;31m%s\033[m %s\n", "User already exists: ", query)
+		printAvailableUsers()
+
+		os.Exit(1)
+	}
+
+	f, err := os.OpenFile(configFile, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	defer f.Close()
+
+	var configToAdd = fmt.Sprintf("\n\n[[authors]]\nname=\"%s\"\nemail=\"%s\"", userName, userEmail)
+
+	println()
+	fmt.Printf("  \033[1m%s\033[m\n", "Adding user...")
+
+	_, err = f.WriteString(configToAdd)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	printAvailableUsers()
+
+	os.Exit(1)
+}
+
 func runCommand(cmd string, args map[string]interface{}) (err error) {
 	argv := make([]string, 1)
 	argv[0] = cmd
@@ -206,30 +242,12 @@ func runCommand(cmd string, args map[string]interface{}) (err error) {
 
 	case "add":
 
-		f, err := os.OpenFile(configFile, os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		defer f.Close()
-
 		userName := args["<name>"].(string)
 		userEmail := args["<email>"].(string)
-		var configToAdd = fmt.Sprintf("\n\n[[authors]]\nname=\"%s\"\nemail=\"%s\"", userName, userEmail)
 
-		println()
-		fmt.Printf("  \033[1m%s\033[m\n", "Adding user...")
+		addUserToConfig(userName, userEmail)
 
-		_, err = f.WriteString(configToAdd)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		printAvailableUsers()
-
-		os.Exit(1)
+		return
 
 	case "setup":
 		// TODO: finish this
