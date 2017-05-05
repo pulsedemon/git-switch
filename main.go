@@ -28,13 +28,14 @@ type userInfo struct {
 
 func main() {
 
-	usage := `git switch
+	usage := `
 
 Usage:
 	git-switch ls
 	git-switch add <name> <email>
 	git-switch reset
 	git-switch setup
+	git-switch help
 	git-switch -h | --help
 	git-switch -v | --version
 	git-switch <name_or_email>
@@ -46,9 +47,9 @@ Options:
 Commands:
   ls      list available users
   setup   generate config file if it doesn't exist
+  add     add a new user to the config
   reset   switch back to the default user
   help    display help
-	--help	display help
 `
 
 	arguments, _ := docopt.Parse(usage, nil, true, "0.0.1", false)
@@ -258,6 +259,9 @@ func runCommand(cmd string, args map[string]interface{}) (err error) {
 		resetGitUser()
 		return
 
+	case "help":
+		return goRun("main.go", []string{"--help"})
+
 	case "":
 		nameOrEmail := args["<name_or_email>"].(string)
 		if len(nameOrEmail) > 0 {
@@ -270,8 +274,6 @@ func runCommand(cmd string, args map[string]interface{}) (err error) {
 
 		return
 
-	case "help":
-		return goRun("main.go", []string{"--help"})
 	}
 
 	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)

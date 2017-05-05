@@ -1,2 +1,31 @@
 ## git-switch
-Uses https://github.com/golang/dep for dependency management.
+
+If you need a way to easily and quickly modify your global git user config, try this out.
+
+*This is still under active development*
+
+## commands
+
+### Usage
+
+```
+$ git switch -h
+Usage:
+	git-switch ls
+	git-switch add <name> <email>
+	git-switch reset
+	git-switch help
+	git-switch -h | --help
+	git-switch -v | --version
+	git-switch <name_or_email>
+
+Options:
+   -v --version
+   -h, --help
+
+Commands:
+  ls      list available users
+	add 		add a new user to the config
+  reset   switch back to the default user
+  help    display help
+```
