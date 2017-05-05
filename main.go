@@ -136,7 +136,7 @@ func printAvailableUsers() {
 	return
 }
 
-func searchForUser(query string) {
+func searchForUser(query string) ([]int, string) {
 	println()
 	matches := make([]int, 0)
 	fmt.Printf("  \033[1m%s\033[m %s\n", "Searching for user:", query)
@@ -154,6 +154,13 @@ func searchForUser(query string) {
 		}
 	}
 
+	return matches, query
+}
+
+func switchUser(matches []int, query string) {
+
+	var config = decodeConfig()
+
 	if len(matches) > 1 {
 		fmt.Printf("  \033[1;33m%s\033[m %s\n", "More than one match found for query:", query)
 		fmt.Printf("  %s\n", "Try your search again with a more specific query.")
@@ -164,6 +171,7 @@ func searchForUser(query string) {
 	} else {
 		fmt.Printf("  \033[1;31m%s\033[m %s\n", "No matches for:", query)
 	}
+
 	return
 }
 
@@ -227,7 +235,9 @@ func runCommand(cmd string, args map[string]interface{}) (err error) {
 	case "":
 		nameOrEmail := args["<name_or_email>"].(string)
 		if len(nameOrEmail) > 0 {
-			searchForUser(nameOrEmail)
+			matches, query := searchForUser(nameOrEmail)
+			switchUser(matches, query)
+
 		} else {
 			return goRun("main.go", []string{"--help"})
 		}
