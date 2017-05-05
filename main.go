@@ -28,25 +28,39 @@ type userInfo struct {
 
 func main() {
 
-	usage := `Usage: git-switch [--version]
-    <command> [<args>...]
+	usage := `git switch
 
-    commands:
-      ls      list available users
-      setup   generate config file if it doesn't exist
-      reset   switch back to the default user
-      help    display help
+Usage:
+	git-switch ls
+	git-switch add <name> <email>
+	git-switch reset
+	git-switch setup
+	git-switch -h | --help
+	git-switch -v | --version
+	git-switch <name_or_email>
 
-    options:
-       -v --version
-       -h, --help
+Options:
+   -v --version
+   -h, --help
+
+Commands:
+  ls      list available users
+  setup   generate config file if it doesn't exist
+  reset   switch back to the default user
+  help    display help
+	--help	display help
 `
 
-	args, _ := docopt.Parse(usage, nil, true, "0.0.1", false)
-	cmd := args["<command>"].(string)
-	cmdArgs := args["<args>"].([]string)
+	arguments, _ := docopt.Parse(usage, nil, true, "0.0.1", false)
 
-	commanderr := runCommand(cmd, cmdArgs)
+	var cmd = ""
+	for key, option := range arguments {
+		if option == true {
+			cmd = key
+		}
+	}
+
+	commanderr := runCommand(cmd, arguments)
 	if commanderr != nil {
 		fmt.Println(commanderr)
 		os.Exit(1)
@@ -153,26 +167,53 @@ func searchForUser(query string) {
 	return
 }
 
-func runCommand(cmd string, args []string) (err error) {
+func runCommand(cmd string, args map[string]interface{}) (err error) {
 	argv := make([]string, 1)
 	argv[0] = cmd
 
 	switch cmd {
 	case "ls":
 		println()
+		currentUserName, currentUserEmail := getCurrentGitUser()
+		fmt.Printf("  \033[1;32m%s\033[m\n", "Current user:")
+		fmt.Printf("  %s", currentUserName)
+		fmt.Printf("  %s", currentUserEmail)
+
+		println()
 		defaultUserName, defaultUserEmail := getDefaultUser()
 		fmt.Printf("  \033[1m%s\033[m\n", "Default user:")
 		fmt.Printf("  %s\n", defaultUserName)
 		fmt.Printf("  %s\n", defaultUserEmail)
 
-		currentUserName, currentUserEmail := getCurrentGitUser()
-		println()
-		fmt.Printf("  \033[1m%s\033[m\n", "Current user:")
-		fmt.Printf("  %s", currentUserName)
-		fmt.Printf("  %s", currentUserEmail)
-
 		printAvailableUsers()
 		return
+
+	case "add":
+
+		f, err := os.OpenFile(configFile, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		defer f.Close()
+
+		userName := args["<name>"].(string)
+		userEmail := args["<email>"].(string)
+		var configToAdd = fmt.Sprintf("\n\n[[authors]]\nname=\"%s\"\nemail=\"%s\"", userName, userEmail)
+
+		println()
+		fmt.Printf("  \033[1m%s\033[m\n", "Adding user...")
+
+		_, err = f.WriteString(configToAdd)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		printAvailableUsers()
+
+		os.Exit(1)
 
 	case "setup":
 		// TODO: finish this
@@ -183,13 +224,18 @@ func runCommand(cmd string, args []string) (err error) {
 		resetGitUser()
 		return
 
-	case "help", "":
-		return goRun("main.go", []string{"--help"})
-	}
+	case "":
+		nameOrEmail := args["<name_or_email>"].(string)
+		if len(nameOrEmail) > 0 {
+			searchForUser(nameOrEmail)
+		} else {
+			return goRun("main.go", []string{"--help"})
+		}
 
-	if cmd != "" && len(args) == 0 {
-		searchForUser(cmd)
 		return
+
+	case "help":
+		return goRun("main.go", []string{"--help"})
 	}
 
 	return fmt.Errorf("%s is not a git-switch command. See 'git-switch help'", cmd)
