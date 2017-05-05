@@ -4,7 +4,14 @@ If you need a way to easily and quickly modify your global git user config, try 
 
 *This is still under active development*
 
-## commands
+## Installation
+
+The easiest way to install right now would be:
+
+`go get github.com/pulsedemon/git-switch`
+
+
+## Commands
 
 ### Usage
 
